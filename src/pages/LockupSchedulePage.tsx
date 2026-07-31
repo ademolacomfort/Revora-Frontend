@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { getMockScenarios, LockupScenarioId, LockupSchedule, UnlockEvent } from './LockupSchedulePage.types';
+import { LockupClaimModal } from '../components/LockupClaimModal';
 import './LockupSchedulePage.css';
 
 // Formatter Helpers
@@ -38,6 +39,7 @@ export const LockupSchedulePage: React.FC = () => {
   const [activeScenarioId, setActiveScenarioId] = useState<LockupScenarioId>('quarterly-nominal');
   const [hoveredTickId, setHoveredTickId] = useState<string | null>(null);
   const [focusedTickId, setFocusedTickId] = useState<string | null>(null);
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
 
   // Sorting for accessible table
   const [sortField, setSortField] = useState<'date' | 'amount' | 'status'>('date');
@@ -258,10 +260,20 @@ export const LockupSchedulePage: React.FC = () => {
             <div className="lsp-card" data-testid="stat-unlocked">
               <span className="lsp-card-label">Total Unlocked</span>
               <span className="lsp-card-value text-emerald-400">{formatCurrency(progressMetrics!.unlockedAmount, schedule.tokenSymbol)}</span>
-              <span className="lsp-card-sub flex items-center gap-1">
+              <span className="lsp-card-sub flex items-center gap-1 mb-2">
                 <Unlock size={12} className="text-emerald-400" aria-hidden="true" />
                 Available to claim
               </span>
+              {progressMetrics!.unlockedAmount > 0 && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  className="btn--sm w-full mt-1"
+                  onClick={() => setIsClaimModalOpen(true)}
+                >
+                  Claim Tokens
+                </Button>
+              )}
             </div>
 
             {/* Remaining Locked */}
@@ -578,6 +590,13 @@ export const LockupSchedulePage: React.FC = () => {
               </div>
             </div>
           </footer>
+
+          <LockupClaimModal
+            isOpen={isClaimModalOpen}
+            onClose={() => setIsClaimModalOpen(false)}
+            unlockedAmount={`${progressMetrics!.unlockedAmount.toLocaleString('en-US')} ${schedule.tokenSymbol}`}
+            gasEstimate={0.002}
+          />
         </>
       )}
     </div>
